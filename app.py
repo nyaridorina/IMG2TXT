@@ -6,6 +6,9 @@ import os
 # Initialize Flask app
 app = Flask(__name__)
 
+# Specify the path to the tesseract executable
+pytesseract.pytesseract.tesseract_cmd = r'C:\Users\dnyari\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'  # Adjust this path for your system
+
 # Set the upload folder
 UPLOAD_FOLDER = 'uploads/'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -39,6 +42,10 @@ def extract_text(image_path):
         return text
     except Exception as e:
         return f"Error extracting text: {str(e)}"
+
+@app.errorhandler(500)
+def internal_error(error):
+    return "An internal server error occurred: {}".format(error), 500
 
 # Run the app
 if __name__ == '__main__':
