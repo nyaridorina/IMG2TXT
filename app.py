@@ -14,24 +14,32 @@ UPLOAD_FOLDER = 'uploads/'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Allowed extensions for file uploads
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 # Route for home page
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
         # Check if the post request has the file part
         if 'file' not in request.files:
-            return 'No file part'
+            return render_template('index.html', error="No file part")
         file = request.files['file']
         # If the user does not select a file, the browser might submit an empty part
         if file.filename == '':
-            return 'No selected file'
-        if file:
+            return render_template('index.html', error="No selected file")
+        if file and allowed_file(file.filename):
             # Save the file to the upload folder
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
             # Extract text using Tesseract OCR
             extracted_text = extract_text(file_path)
             return render_template('result.html', text=extracted_text)
+        else:
+            return render_template('index.html', error="Invalid file type. Please upload an image.")
     return render_template('index.html')
 
 # Function to extract text from an image using pytesseract
