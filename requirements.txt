@@ -1,11 +1,11 @@
 Flask==2.3.2
 gunicorn==21.2.0
 pytesseract==0.3.10
-Pillow==9.4.0  # Required by pytesseract for image processing
-requests==2.31.0  # For making HTTP requests
-numpy==1.25.2  # If you're doing any kind of numerical operations
-opencv-python==4.8.0.74  # If you're working with images in conjunction with pytesseract
-Werkzeug==2.3.7  # Flask depends on Werkzeug for WSGI utilities
-Flask-WTF==1.1.1  # If using Flask forms
-Flask-SQLAlchemy==3.0.4  # For integrating SQLAlchemy with Flask
-psycopg2-binary==2.9.7  # For connecting to PostgreSQL if you're using it
+Pillow==9.4.0
+requests==2.31.0
+numpy==1.25.2
+opencv-python==4.8.0.74
+Werkzeug==2.3.7
+Flask-WTF==1.1.1
+Flask-SQLAlchemy==3.0.4
+psycopg2-binary==2.9.7
