@@ -31,7 +31,9 @@ def upload_file():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
             # Extract text using an OCR API
-            formatted_text = '<br>'.join([line.strip() for line in extract_text(file_path).split('\n') if line.strip()])
+            formatted_text = '
+'.join([word.strip() for line in extract_text(file_path).split('
+') for word in line.split() if word.strip()])
             return render_template('result.html', text=formatted_text)
     return render_template('index.html')
 
