@@ -28,7 +28,8 @@ def upload_file():
             file.save(file_path)
             # Extract text using an OCR API
             extracted_text = extract_text(file_path)
-            return render_template('result.html', text=extracted_text)
+            return render_template('result.html', text=extracted_text.replace('
+', '<br>'))
     return render_template('index.html')
 
 # Function to extract text from an image using OCR API
@@ -42,7 +43,9 @@ def extract_text(image_path):
                 data={'apikey': api_key}
             )
         result = response.json()
-        return result.get("ParsedResults")[0].get("ParsedText") if result.get("ParsedResults") else "No text found"
+        return result.get("ParsedResults")[0].get("ParsedText").replace('
+', '
+') if result.get("ParsedResults") else "No text found"
     except Exception as e:
         return f"Error extracting text: {str(e)}"
 
