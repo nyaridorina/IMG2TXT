@@ -28,7 +28,7 @@ def upload_file():
             file.save(file_path)
             # Extract text using an OCR API
             extracted_text = extract_text(file_path)
-            return render_template('result.html', text=extracted_text.replace('\n', '<br>'))
+    return render_template('result.html', text='<br>'.join([line for line in extracted_text.split('\n') if line.strip()]))
     return render_template('index.html')
 
 # Function to extract text from an image using OCR API
