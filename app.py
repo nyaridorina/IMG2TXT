@@ -33,5 +33,9 @@ def upload_file():
             # Extract text using an OCR API
             formatted_text = '
 '.join([word.strip() for line in extract_text(file_path).split('
-') for word in line.split() if word.strip()]):
+') for word in line.split() if word.strip()])) for word in line.split() if word.strip()]):
+                return render_template('result.html', text=formatted_text)
+
+# Run the app
+if __name__ == '__main__':
     app.run(debug=True)
