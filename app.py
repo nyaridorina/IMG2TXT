@@ -33,34 +33,5 @@ def upload_file():
             # Extract text using an OCR API
             formatted_text = '
 '.join([word.strip() for line in extract_text(file_path).split('
-') for word in line.split() if word.strip()])
-            return render_template('result.html', text=formatted_text)
-    return render_template('index.html')
-
-# Function to extract text from an image using OCR API
-def extract_text(image_path):
-    try:
-        api_key = 'K82639348088957'  # Replace with your actual API key
-        with open(image_path, 'rb') as file:
-            response = requests.post(
-                'https://api.ocr.space/parse/image',
-                files={'file': file},
-                data={'apikey': api_key}
-            )
-        result = response.json()
-        if result.get("ParsedResults"):
-            return result.get("ParsedResults")[0].get("ParsedText", "").replace('\n', '\n')
-        else:
-            return "No text found"
-    except Exception as e:
-        app.logger.error(f"Error extracting text: {str(e)}")
-        return f"Error extracting text: {str(e)}"
-
-@app.errorhandler(500)
-def internal_error(error):
-    app.logger.error(f"An internal server error occurred: {str(error)}")
-    return "An internal server error occurred: {}".format(error), 500
-
-# Run the app
-if __name__ == '__main__':
+') for word in line.split() if word.strip()]):
     app.run(debug=True)
