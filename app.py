@@ -32,7 +32,7 @@ def upload_file():
             file.save(file_path)
             # Extract text using an OCR API
             extracted_text = extract_text(file_path)
-            formatted_text = '\n'.join([word.strip() for line in extracted_text.split('\n') for word in line.split() if word.strip()])
+            formatted_text = '\n'.join([line.strip() for line in extracted_text.split('\n') if line.strip()])
             return render_template('result.html', text=formatted_text)
     return render_template('index.html')
 
