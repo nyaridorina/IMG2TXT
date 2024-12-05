@@ -3,7 +3,6 @@ from werkzeug.utils import secure_filename
 import os
 import pytesseract
 from PIL import Image
-import fitz  # PyMuPDF for handling PDFs
 import logging
 
 # Initialize Flask app
@@ -32,57 +31,26 @@ def upload_file():
             # Save the file to the upload folder
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
             file.save(file_path)
-            # Extract table text
+            # Extract text using OCR
             try:
-                extracted_text = extract_table(file_path)
+                extracted_text = extract_text_from_image(file_path)
                 return render_template('result.html', text=extracted_text)
             except Exception as e:
                 app.logger.error(f"Error processing file: {str(e)}")
                 return render_template('index.html', error="Error processing the file")
     return render_template('index.html')
 
-# Function to extract tables from image or PDF
-def extract_table(file_path):
-    _, ext = os.path.splitext(file_path)
-    ext = ext.lower()
-    
-    if ext in ['.jpg', '.jpeg', '.png', '.bmp', '.tiff']:
-        # Process image file
-        return extract_table_from_image(file_path)
-    elif ext == '.pdf':
-        # Process PDF file
-        return extract_table_from_pdf(file_path)
-    else:
-        raise ValueError("Unsupported file type")
-
-# Function to extract tables from images
-def extract_table_from_image(image_path):
+# Function to extract text from images
+def extract_text_from_image(image_path):
     try:
         img = Image.open(image_path)
-        text = pytesseract.image_to_string(img, config='--psm 6')  # PSM 6 assumes a single uniform block of text
-        return format_table_text(text)
+        text = pytesseract.image_to_string(img)
+        # Format the text line by line
+        formatted_text = '\n'.join(line.strip() for line in text.splitlines() if line.strip())
+        return formatted_text
     except Exception as e:
-        app.logger.error(f"Error extracting table from image: {str(e)}")
+        app.logger.error(f"Error extracting text: {str(e)}")
         raise e
-
-# Function to extract tables from PDFs
-def extract_table_from_pdf(pdf_path):
-    try:
-        doc = fitz.open(pdf_path)
-        text = ""
-        for page_num in range(len(doc)):
-            page = doc.load_page(page_num)
-            text += page.get_text()
-        return format_table_text(text)
-    except Exception as e:
-        app.logger.error(f"Error extracting table from PDF: {str(e)}")
-        raise e
-
-# Format extracted text line by line
-def format_table_text(text):
-    lines = text.splitlines()
-    formatted_text = '\n'.join(line.strip() for line in lines if line.strip())
-    return formatted_text
 
 @app.errorhandler(500)
 def internal_error(error):
