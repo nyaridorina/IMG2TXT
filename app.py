@@ -1,10 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for
-from werkzeug.utils import secure_filename
-import os
-import pytesseract
+import requests
 from PIL import Image
+import os
 import logging
-import pandas as pd
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -30,49 +28,29 @@ def upload_file():
             return render_template('index.html', error="No selected file")
         if file:
             # Save the file to the upload folder
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
-            # Extract table from the image
-            try:
-                table_html = extract_table_from_image(file_path)
-                return render_template('result.html', table_html=table_html)
-            except Exception as e:
-                app.logger.error(f"Error processing file: {str(e)}")
-                return render_template('index.html', error="Error processing the file")
+            # Extract text using an OCR API
+            extracted_text = extract_text(file_path)
+            formatted_text = '\n'.join([line.strip() for line in extracted_text.split('\n') if line.strip()])
+            return render_template('result.html', text=formatted_text)
     return render_template('index.html')
 
-# Function to extract table from images and format as HTML table
-def extract_table_from_image(image_path):
+# Function to extract text from an image using OCR API
+def extract_text(image_path):
     try:
-        img = Image.open(image_path)
-        data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DATAFRAME)
-
-        # Filter out rows with no text
-        data = data[data['text'].notnull()]
-
-        # Reconstruct table based on `block_num`, `par_num`, and `line_num`
-        table_data = []
-        current_row = []
-        last_line_num = None
-
-        for _, row in data.iterrows():
-            if last_line_num is not None and row['line_num'] != last_line_num:
-                # Add the current row to the table and start a new row
-                table_data.append(current_row)
-                current_row = []
-            current_row.append(row['text'])
-            last_line_num = row['line_num']
-
-        # Append the last row
-        if current_row:
-            table_data.append(current_row)
-
-        # Convert table data into an HTML table
-        table_html = pd.DataFrame(table_data).to_html(index=False, header=False, escape=False)
-        return table_html
+        api_key = 'K82639348088957'  # Replace with your actual API key
+        with open(image_path, 'rb') as file:
+            response = requests.post(
+                'https://api.ocr.space/parse/image',
+                files={'file': file},
+                data={'apikey': api_key}
+            )
+        result = response.json()
+        return result.get("ParsedResults")[0].get("ParsedText", "No text found") if result.get("ParsedResults") else "No text found"
     except Exception as e:
-        app.logger.error(f"Error extracting table from image: {str(e)}")
-        raise e
+        app.logger.error(f"Error extracting text: {str(e)}")
+        return f"Error extracting text: {str(e)}"
 
 @app.errorhandler(500)
 def internal_error(error):
